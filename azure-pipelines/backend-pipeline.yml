@@ -25,6 +25,7 @@ stages:
         command: buildAndPush
         repository: $(imageName)
         dockerfile: backend/Dockerfile
+        buildContext: .
         containerRegistry: $(dockerRegistryServiceConnection)
         tags: |
           latest
