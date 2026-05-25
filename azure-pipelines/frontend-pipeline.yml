@@ -1,0 +1,44 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: ubuntu-latest
+
+variables:
+  imageName: notes-frontend
+  acrName: notesapp.azurecr.io
+  dockerRegistryServiceConnection: acr-service-connection
+  azureSubscription: azure-service-connection
+  webAppName: notes-frontend-app
+
+stages:
+- stage: BuildAndPush
+  jobs:
+  - job: DockerBuild
+    steps:
+
+    - task: Docker@2
+      displayName: Build and Push Frontend Image
+      inputs:
+        command: buildAndPush
+        repository: $(imageName)
+        dockerfile: frontend/Dockerfile
+        buildContext: frontend
+        containerRegistry: $(dockerRegistryServiceConnection)
+        tags: |
+          latest
+
+- stage: Deploy
+  dependsOn: BuildAndPush
+  jobs:
+  - job: DeployFrontend
+    steps:
+
+    - task: AzureWebAppContainer@1
+      displayName: Deploy Frontend Container
+      inputs:
+        azureSubscription: $(azureSubscription)
+        appName: $(webAppName)
+        containers: $(acrName)/$(imageName):latest
