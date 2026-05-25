@@ -29,7 +29,7 @@ stages:
         repository: $(imageName)
 
         dockerfile: frontend/Dockerfile
-        buildContext: frontend
+        buildContext: .
 
         containerRegistry: $(dockerRegistryServiceConnection)
 
