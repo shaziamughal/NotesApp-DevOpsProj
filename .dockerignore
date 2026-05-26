@@ -1,5 +1,4 @@
 node_modules
-build
 .git
 frontend/node_modules
 backend/node_modules

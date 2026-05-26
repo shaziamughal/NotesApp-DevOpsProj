@@ -1,12 +1,16 @@
 FROM node:18-alpine
+
 WORKDIR /app
 
-COPY package.json package-lock.json ./
-RUN npm ci --production --silent
+COPY package*.json ./
 
-COPY . .
+RUN npm install
 
-ENV PORT=5000
+COPY backend ./backend
+
+WORKDIR /app/backend
+
 EXPOSE 5000
 
-CMD ["node", "backend/server.js"]
+CMD ["node", "server.js"]
+

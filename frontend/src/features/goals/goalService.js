@@ -1,8 +1,9 @@
 import axios from 'axios'
 import { apiUrl } from '../../app/apiUrl'
 
-const API_URL = apiUrl('/api/goals')
-
+//const API_URL = 'http://localhost:5000/api/goals/'
+//const API_URL = apiUrl('/api/goals')
+const API_URL = '/api/goals/'
 // Create new goal
 const createGoal = async (goalData, token) => {
   const config = {
