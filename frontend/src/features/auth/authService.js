@@ -1,12 +1,11 @@
 import axios from 'axios'
-import { apiUrl } from '../../app/apiUrl'
 
-//const API_URL = 'http://localhost:5000/api/users/'
-//const API_URL = apiUrl('/api/users')
-const API_URL = '/api/users/'
+const API_URL =
+  'https://notes-backend-app.azurewebsites.net/api/users/'
+
 // Register user
 const register = async (userData) => {
-  const response = await axios.post(`${API_URL}/`, userData)
+  const response = await axios.post(API_URL, userData)
 
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data))
@@ -17,7 +16,7 @@ const register = async (userData) => {
 
 // Login user
 const login = async (userData) => {
-  const response = await axios.post(`${API_URL}/login`, userData)
+  const response = await axios.post(API_URL + 'login', userData)
 
   if (response.data) {
     localStorage.setItem('user', JSON.stringify(response.data))
