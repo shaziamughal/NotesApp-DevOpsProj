@@ -7,42 +7,55 @@ const User = require('../models/userModel')
 // @route   POST /api/users
 // @access  Public
 const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body
+  try {
+    console.log('REGISTER BODY:', req.body)
 
-  if (!name || !email || !password) {
-    res.status(400)
-    throw new Error('Please add all fields')
-  }
+    const { name, email, password } = req.body
 
-  // Check if user exists
-  const userExists = await User.findOne({ email })
+    if (!name || !email || !password) {
+      res.status(400)
+      throw new Error('Please add all fields')
+    }
 
-  if (userExists) {
-    res.status(400)
-    throw new Error('User already exists')
-  }
+    // Check if user exists
+    const userExists = await User.findOne({ email })
 
-  // Hash password
-  const salt = await bcrypt.genSalt(10)
-  const hashedPassword = await bcrypt.hash(password, salt)
+    if (userExists) {
+      res.status(400)
+      throw new Error('User already exists')
+    }
 
-  // Create user
-  const user = await User.create({
-    name,
-    email,
-    password: hashedPassword,
-  })
+    // Hash password
+    const salt = await bcrypt.genSalt(10)
+    const hashedPassword = await bcrypt.hash(password, salt)
 
-  if (user) {
-    res.status(201).json({
-      _id: user.id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
+    // Create user
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
     })
-  } else {
-    res.status(400)
-    throw new Error('Invalid user data')
+
+    if (user) {
+      console.log('USER REGISTERED SUCCESSFULLY')
+
+      res.status(201).json({
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        token: generateToken(user._id),
+      })
+    } else {
+      res.status(400)
+      throw new Error('Invalid user data')
+    }
+  } catch (err) {
+    console.log('REGISTER ERROR:')
+    console.log(err)
+
+    res.status(res.statusCode || 500)
+
+    throw new Error(err.message)
   }
 })
 
@@ -50,21 +63,45 @@ const registerUser = asyncHandler(async (req, res) => {
 // @route   POST /api/users/login
 // @access  Public
 const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body
+  try {
+    console.log('LOGIN BODY:', req.body)
 
-  // Check for user email
-  const user = await User.findOne({ email })
+    const { email, password } = req.body
 
-  if (user && (await bcrypt.compare(password, user.password))) {
-    res.json({
-      _id: user.id,
-      name: user.name,
-      email: user.email,
-      token: generateToken(user._id),
-    })
-  } else {
-    res.status(400)
-    throw new Error('Invalid credentials')
+    // Check for user email
+    const user = await User.findOne({ email })
+
+    console.log('FOUND USER:', user)
+
+    if (!user) {
+      res.status(400)
+      throw new Error('User not found')
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password)
+
+    console.log('PASSWORD MATCH:', isMatch)
+
+    if (isMatch) {
+      console.log('LOGIN SUCCESS')
+
+      res.json({
+        _id: user.id,
+        name: user.name,
+        email: user.email,
+        token: generateToken(user._id),
+      })
+    } else {
+      res.status(400)
+      throw new Error('Invalid credentials')
+    }
+  } catch (err) {
+    console.log('LOGIN ERROR:')
+    console.log(err)
+
+    res.status(res.statusCode || 500)
+
+    throw new Error(err.message)
   }
 })
 
@@ -72,11 +109,22 @@ const loginUser = asyncHandler(async (req, res) => {
 // @route   GET /api/users/me
 // @access  Private
 const getMe = asyncHandler(async (req, res) => {
-  res.status(200).json(req.user)
+  try {
+    res.status(200).json(req.user)
+  } catch (err) {
+    console.log('GET ME ERROR:')
+    console.log(err)
+
+    res.status(500)
+
+    throw new Error(err.message)
+  }
 })
 
 // Generate JWT
 const generateToken = (id) => {
+  console.log('JWT_SECRET EXISTS:', !!process.env.JWT_SECRET)
+
   return jwt.sign({ id }, process.env.JWT_SECRET, {
     expiresIn: '30d',
   })
